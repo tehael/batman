@@ -53,7 +53,7 @@ In any reasonable sized application, the results should be immediately noticeabl
 
 For batman.js to power the greatest applications, it needs to run on the latest tools. After figuring out some nasty dependency issues, I'm pleased to say that **batman.js is now compatible with node 0.6.x**. This comes mostly thanks to some intense work Harry has been doing on [qqunit](http://github.com/hornairs/qqunit), a new test runner library for node. It is similar to node-qunit in that it's designed to run your QUnit test suite in node, but it's a drastically simpler library without the multi-process shenanigans that make node-qunit so hard to debug.
 
-![one happy test suite, running on node 0.6](http://f.cl.ly/items/3U1s1x1m0s2T1k1G0x2Q/qqunitresults.png)
+![one happy test suite, running on node 0.6](http://f.cl.ly/items/0f0H1O3Z000C1D2Q0d36/qqunitresults.png)
 
 ## Thanks
 
