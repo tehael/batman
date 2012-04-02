@@ -1,9 +1,9 @@
 pygments: true
 download:
-    version: 0.8.0
-    date: "November 22nd, 2011"
+    version: 0.9.0
+    date: "April 2nd, 2012"
     size: 18kb gzipped
-    blurb: Fourth alpha release of batman.js. Please see the blog post or release notes for more information.
+    blurb: Fifth alpha release of batman.js. A huge update heading towards 1.0.
 examples:
     - title: Hello World
       url: '/hello_world.html'
