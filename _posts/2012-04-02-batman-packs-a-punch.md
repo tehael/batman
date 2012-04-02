@@ -28,7 +28,7 @@ As always, You can see the complete list in the [changelog](https://github.com/S
 
 One of the biggest (and most requested) missing features of the framework is the not-unreasonable desire for real documentation. It's been a long time coming, but it's finally happening. The beautiful new documentation browser can be found at [http://batmanjs.org/docs/batman.html](http://batmanjs.org/docs/batman.html). While the docs are still incomplete, they currently cover about 50% of the framework, including the runtime and view components. They're certainly getting better every day as we touch more parts of the code, but it's now super simple to help out and contribute to the docs. Look, it's like it's almost a real framework!
 
-PICTURE OF THE DOCS
+![look at my docs, my docs are amazing](http://f.cl.ly/items/2F2f33241X3o2L3j0w3h/Screen%20Shot%202012-04-02%20at%202.42.58%20PM.png)
 
 The mechanism with which the docs are generated is a new tool called [Percolate](https://github.com/Shopify/batman/blob/master/docs/percolate.coffee). We wanted to keep documentation separate from source code so that the barrier for entry for potential contributors is substantially lower, while still allowing the docs to have a close relationship with the code and always be up to date. Percolate is thusly designed to essentially generate a docset with inline code examples by running the actual code like a unit test. You can setup Percolate templates and files with your natural language documentation and code blocks that contain small unit tests. When Percolate percolates your docs (ideally as part of your normal test runner), it will run these self-contained unit tests. If anything fails, you'll immediately know your docs are out of date. If everything goes better than expected, you'll have some pretty damned fancy looking docs.
 
@@ -38,7 +38,7 @@ Another area batman.js has been lagging behind in since the days it existed in o
 
 Using Tiller, we've been able to start cutting down on a number of bloated areas within the codebase. Things like custom Sets and Hashes were a serious drain on resources. I could start listing numbers, but I'll let the graph speak for itself:
 
-PICTURE OF THE GRAPH
+![our super scientific batman.js performance graph](http://f.cl.ly/items/0d1Y3E0P361R1N3R2R2K/IMG_2097.JPG)
 
 In any reasonable sized application, the results should be immediately noticeable. Actions should dispatch much faster, things should be more intelligently cached, and memory usage should be drastically lower. Of course, there's still and forever more work to be done in these aspects, and we look forward to doing a more in-depth writeup of the performance work as it continues.
 
@@ -53,7 +53,7 @@ In any reasonable sized application, the results should be immediately noticeabl
 
 For batman.js to power the greatest applications, it needs to run on the latest tools. After figuring out some nasty dependency issues, I'm pleased to say that **batman.js is now compatible with node 0.6.x**. This comes mostly thanks to some intense work Harry has been doing on [qqunit](http://github.com/hornairs/qqunit), a new test runner library for node. It is similar to node-qunit in that it's designed to run your QUnit test suite in node, but it's a drastically simpler library without the multi-process shenanigans that make node-qunit so hard to debug.
 
-PICTURE OF BATMAN TEST SUITE RUNNING
+![one happy test suite, running on node 0.6](http://f.cl.ly/items/3U1s1x1m0s2T1k1G0x2Q/qqunitresults.png)
 
 ## Thanks
 
