@@ -7,7 +7,10 @@ download:
 examples:
     - title: Hello World
       url: '/hello_world.html'
+      key: hello world
     - title: Alfred - Batman's Todos
       url: '/alfred.html'
+      key: alfred
     - title: Shopify Classifieds
       url: 'http://batman-classifieds.heroku.com/'
+      key: classifieds
