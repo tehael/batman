@@ -2501,6 +2501,8 @@ class Batman.Model extends Batman.Object
   #  - For LocalStorage, this ends up being the namespace in localStorage in which JSON is stored
   @storageKey: null
 
+  @modelConstructor: (attributes) -> @
+
   # Pick one or many mechanisms with which this model should be persisted. The mechanisms
   # can be already instantiated or just the class defining them.
   @persist: (mechanisms...) ->
@@ -3581,7 +3583,8 @@ class Batman.StorageAdapter extends Batman.Object
     constructor: (message) ->
       super(message || "Record couldn't be found in storage!")
 
-  constructor: (model) -> super(model: model)
+  constructor: (model) -> 
+    super(model: model)
 
   isStorageAdapter: true
 
@@ -3590,6 +3593,7 @@ class Batman.StorageAdapter extends Batman.Object
     model.get('storageKey') || helpers.pluralize(helpers.underscore($functionName(model)))
 
   getRecordFromData: (attributes, constructor = @model) ->
+    constructor = constructor.modelConstructor(attributes)
     record = new constructor()
     record.fromJSON(attributes)
     record
@@ -3658,6 +3662,12 @@ class Batman.StorageAdapter extends Batman.Object
     @runBeforeFilter key, env, (env) ->
       @[key](env, next)
 
+  @::after 'read', @skipIfError (env, next) ->
+    constructor = env.record.constructor.modelConstructor(env.data)
+    unless constructor is env.record.constructor 
+      env.record = @getRecordFromData(env.data, constructor)
+    next()
+  
 class Batman.LocalStorage extends Batman.StorageAdapter
   constructor: ->
     return null if typeof window.localStorage is 'undefined'

@@ -123,3 +123,45 @@ test 'urlNestsUnder should nest new record URLs', 1, ->
   product = new @Product(shop_id: 2)
   equal product.url(), 'shops/2/products'
 
+QUnit.module 'Batman.Model modelConstructor overriding', 
+  setup: ->
+    namespace = @
+    class @Foo extends Batman.Model
+      @encode 'name', 'fumbles', 'bumbles'
+      @modelConstructor: (attributes) ->
+        if attributes.type == 'bar' then namespace.Bar else namespace.Foo
+
+    @adapter = new TestStorageAdapter(@Foo)
+    @adapter.storage =
+      'foos1': {name: "One", fumbles: 1, id:1, bumbles: 42, type: 'foo'},
+      'foos2': {name: "Two", fumbles: 21, id:2, bumbles: 28, type: 'foo'},
+      'foos3': {name: "Three", fumbles: 31, id:3, bumbles: 17, type: 'bar'},
+      'foos4': {name: "four", fumbles: 41, id:4, bumbles: 80, type: 'foo'}
+      'foos5': {name: "four", fumbles: 51, id:5, bumbles: 51, type: 'bar'}
+    @Foo.persist @adapter
+
+
+    class @Bar extends @Foo
+
+test 'loading a set of Models will return a mixed type Set based on @modelConstructor', ->
+  @Foo.load (err, records) => 
+    equal @Foo.get('loaded.length'), 5
+  
+    equal records[0].id, 1
+    ok records[0] instanceof @Foo
+    equal 2, records[1].id
+    ok records[1] instanceof @Foo
+    equal 3, records[2].id
+    ok records[2] instanceof @Bar
+    equal 4, records[3].id
+    ok records[3] instanceof @Foo
+    equal 5, records[4].id
+    ok records[4] instanceof @Bar
+
+test 'finding a single Model will return a typed object based on @modelConstructor', ->
+  foo1 = @Foo.find 1, (err, foo) ->
+    throw err if err
+  foo3 = @Foo.find 3, (err, foo) ->
+    throw err if err
+  ok foo1 instanceof @Foo
+  ok foo3 instanceof @Bar

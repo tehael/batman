@@ -6,62 +6,64 @@ class TestStorageAdapter extends Batman.StorageAdapter
     @lastQuery = false
     @create(new @model, {}, ->)
 
-  update: (record, options, callback) ->
-    id = record.get('id')
+  read: @skipIfError (env, next) ->
+    id = env.record.get('id')
     if id
-      @storage[@storageKey(record) + id] = record.toJSON()
-      callback(undefined, record)
-    else
-      callback(new Error("Couldn't get record primary key."))
-
-  create: (record, options, callback) ->
-    id = record.set('id', @counter++)
-    if id
-      @storage[@storageKey(record) + id] = record.toJSON()
-      record.fromJSON {id: id}
-      callback(undefined, record)
-    else
-      callback(new Error("Couldn't get record primary key."))
-
-  read: (record, options, callback) ->
-    id = record.get('id')
-    if id
-      attrs = @storage[@storageKey(record) + id]
+      attrs = @storage[@storageKey(env.record) + id]
       if attrs
-        record.fromJSON(attrs)
-        callback(undefined, record)
+        env.record.fromJSON(attrs)
+        callback(undefined, env.record)
       else
         callback(new Error("Couldn't find record!"))
     else
       callback(new Error("Couldn't get record primary key."))
+    next()
 
-  readAll: (_, options, callback) ->
+  create: @skipIfError ({key, recordAttributes}, next) ->debugger
+    id = env.record.set('id', @counter++)
+    if id = @storage[key]
+      @storage.setItem(key, recordAttrti)
+      @storage[@storageKey(env.record) + id] = env.record.toJSON()
+      env.record.fromJSON {id: id}
+      callback(undefined, env.record)
+    else
+      callback(new Error("Couldn't get record primary key."))
+    next()
+
+  update: @skipIfError ({key, recordAttributes}, next) ->
+    id = env.record.get('id')
+    if id
+      @storage[@storageKey(env.record) + id] = env.record.toJSON()
+      callback(undefined, env.record)
+    else
+      callback(new Error("Couldn't get record primary key."))
+    next()
+
+  destroy: @skipIfError ({key}, next) ->
+    id = env.record.get('id')
+    if id
+      key = @storageKey(env.record) + id
+      if @storage[key]
+        delete @storage[key]
+        callback(undefined, env.record)
+      else
+        callback(new Error("Can't delete nonexistant record!"), env.record)
+    else
+      callback(new Error("Can't delete record without an primary key!"), env.record)
+    next()
+
+  readAll: @skipIfError ({proto, options}, next) ->
     records = []
     for storageKey, data of @storage
       match = true
-      for k, v of options
+      for k, v of options.data
         if data[k] != v
           match = false
           break
       records.push data if match
 
     callback(undefined, @getRecordFromData(record) for record in records)
-
-  destroy: (record, options, callback) ->
-    id = record.get('id')
-    if id
-      key = @storageKey(record) + id
-      if @storage[key]
-        delete @storage[key]
-        callback(undefined, record)
-      else
-        callback(new Error("Can't delete nonexistant record!"), record)
-    else
-      callback(new Error("Can't delete record without an primary key!"), record)
-
-  perform: (action, record, options, callback) ->
-    throw new Error("No options passed to storage adapter!") unless options?
-    @[action](record, options.data, callback)
+    next()
 
 class AsyncTestStorageAdapter extends TestStorageAdapter
   perform: (args...) ->
