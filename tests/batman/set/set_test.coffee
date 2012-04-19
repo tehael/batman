@@ -252,12 +252,18 @@ basicSetTestSuite = ->
     equal observer.callCount, 2
     strictEqual obj.get('firstBiggerThan2'), 4
 
-
   test "using .toJSON() returns an array representation of the set", ->
     set = new Batman.Set
     set.add new Batman.Object foo: 'bar'
     set.add new Batman.Object bar: 'baz'
     deepEqual set.toJSON(), set.toArray()
+
+  test "keypaths on set length recaculate when the instance changes", 2, ->
+    object = Batman(things: new Batman.Set)
+    object.observe 'things.length', spy = createSpy()
+    equal spy.callCount, 0
+    object.set 'things', new Batman.Set('foo')
+    equal spy.callCount, 1
 
 sortAndIndexSuite = ->
   test "sortedBy(property, order) returns a cached SetSort", ->

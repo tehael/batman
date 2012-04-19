@@ -75,6 +75,42 @@ asyncTest 'it should allow commenting of bindings', 1, ->
     equal node.html(), ""
     QUnit.start()
 
+asyncTest 'it should allow binding to object length', 4, ->
+  source = '''
+    <span data-bind="users.length"></span>
+    <span data-bind="users['length']"></span>
+  '''
+
+  context = Batman
+    users: new Batman.Object(length: 0)
+
+  helpers.render source, context, (node) =>
+    equal node[0].innerHTML, "0"
+    equal node[1].innerHTML, "0"
+
+    context.set 'users', new Batman.Object(length: 1)
+    equal node[0].innerHTML, "1"
+    equal node[1].innerHTML, "1"
+    QUnit.start()
+
+asyncTest 'it should allow binding to set length', 4, ->
+  source = '''
+    <span data-bind="users.length"></span>
+    <span data-bind="users['length']"></span>
+  '''
+
+  context = Batman
+    users: new Batman.Set
+
+  helpers.render source, context, (node) =>
+    equal node[0].innerHTML, "0"
+    equal node[1].innerHTML, "0"
+
+    context.set 'users', new Batman.Set {name: 'John'}
+    equal node[0].innerHTML, "1"
+    equal node[1].innerHTML, "1"
+    QUnit.start()
+
 asyncTest 'bindings in lower down scopes should shadow higher ones', 3, ->
   context = Batman
     namespace: Batman
