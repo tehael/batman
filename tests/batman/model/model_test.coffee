@@ -87,6 +87,18 @@ test 'the array of instantiated storage adapters should be returned when persist
   for instance in [a,b,c]
     ok instance.isTestStorageAdapter
 
+test "get('className') should use the class level model name property", ->
+  class Product extends Batman.Model
+    @className: 'Product'
+
+  equal Product.get('className'), 'Product'
+
+test "get('className') should use the prototype level storageKey property", ->
+  class Product extends Batman.Model
+    storageKey: 'products'
+
+  equal Product.get('className'), 'Product'
+
 QUnit.module "Batman.Model class clearing"
   setup: ->
     class @Product extends Batman.Model
