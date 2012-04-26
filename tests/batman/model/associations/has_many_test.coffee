@@ -138,19 +138,19 @@ asyncTest "hasMany associations are saved via the parent model", 5, ->
   store.save (err, record) =>
     throw err if err
     equal storeSaveSpy.callCount, 1
-    equal product1.get('store_id'), record.id
-    equal product2.get('store_id'), record.id
+    equal product1.get('store_id'), record.get('id')
+    equal product2.get('store_id'), record.get('id')
 
-    @Store.find record.id, (err, store2) =>
+    @Store.find record.get('id'), (err, store2) =>
       throw err if err
-      storedJSON = @storeAdapter.storage["stores#{record.id}"]
+      storedJSON = @storeAdapter.storage["stores#{record.get('id')}"]
       deepEqual store2.toJSON(), storedJSON
       # hasMany saves inline by default
       sorter = generateSorterOnProperty('name')
 
       deepEqual sorter(storedJSON.products), sorter([
-        {name: "Gizmo", store_id: record.id, productVariants: []}
-        {name: "Gadget", store_id: record.id, productVariants: []}
+        {name: "Gizmo", store_id: record.get('id'), productVariants: []}
+        {name: "Gadget", store_id: record.get('id'), productVariants: []}
       ])
       QUnit.start()
 
@@ -160,7 +160,7 @@ asyncTest "hasMany associations are saved via the child model", 2, ->
     product = new @Product name: 'Gizmo'
     product.set 'store', store
     product.save (err, savedProduct) ->
-      equal savedProduct.get('store_id'), store.id
+      equal savedProduct.get('store_id'), store.get('id')
       products = store.get('products')
       ok products.has(savedProduct)
       QUnit.start()
@@ -321,6 +321,91 @@ asyncTest "saved hasMany models who's related records have been removed should s
       deepEqual @productAdapter.storage['products3'], {id: 3, name: "Product Three", store_id: 1, productVariants: []}
       QUnit.start()
 
+asyncTest "unsaved hasMany models should decode their child records based on ID", ->
+  @ProductVariant.load (err, variants) =>
+    product = new @Product
+
+    five = variants[0]
+    six = variants[1]
+
+    # decode with the variants out of order
+    product.fromJSON
+      name: "Product Three"
+      id: 3
+      store_id: 1
+      productVariants: [{
+        id:6
+        price:60
+        product_id:3
+      },{
+        id:5
+        price:50
+        product_id:3
+      }]
+
+    equal product.get('productVariants.length'), 2
+    deepEqual product.get('productVariants').mapToProperty('id').sort(), [5,6]
+    equal five.get('price'), 50
+    equal six.get('price'), 60
+    QUnit.start()
+
+asyncTest "unsaved hasMany models should decode their existing child records based on ID", ->
+  @ProductVariant.load (err, variants) =>
+    product = new @Product
+    product.get('productVariants').add(variant) for variant in variants
+
+    five = product.get('productVariants').indexedByUnique('id').get(5)
+    six = product.get('productVariants').indexedByUnique('id').get(6)
+
+    # decode with the variants out of order
+    product.fromJSON
+      name: "Product Three"
+      id: 3
+      store_id: 1
+      productVariants: [{
+        id:6
+        price:60
+        product_id:3
+      },{
+        id:5
+        price:50
+        product_id:3
+      }]
+
+    equal product.get('productVariants.length'), 2
+    deepEqual product.get('productVariants').mapToProperty('id').sort(), [5,6]
+    equal five.get('price'), 50
+    equal six.get('price'), 60
+    QUnit.start()
+
+asyncTest "saved hasMany models should decode their child records based on ID", ->
+  @Product.find 3, (err, product) =>
+    throw err if err
+
+    five = product.get('productVariants').indexedByUnique('id').get(5)
+    six = product.get('productVariants').indexedByUnique('id').get(6)
+
+    # decode with the variants out of order
+    product.fromJSON
+      name: "Product Three"
+      id: 3
+      store_id: 1
+      productVariants: [{
+        id:6
+        price:60
+        product_id:3
+      },{
+        id:5
+        price:50
+        product_id:3
+      }]
+
+    equal product.get('productVariants.length'), 2
+    deepEqual product.get('productVariants').mapToProperty('id').sort(), [5,6]
+    equal five.get('price'), 50
+    equal six.get('price'), 60
+    QUnit.start()
+
 asyncTest "hasMany associations render", 4, ->
   @Store.find 1, (err, store) =>
     throw err if err
@@ -332,16 +417,16 @@ asyncTest "hasMany associations render", 4, ->
         equal node.children().get(1)?.innerHTML, 'Product Two'
         equal node.children().get(2)?.innerHTML, 'Product Three'
 
-        addedProduct = new @Product(name: 'Product Four', store_id: store.id)
+        addedProduct = new @Product(name: 'Product Four', store_id: store.get('id'))
         addedProduct.save (err, savedProduct) ->
           delay ->
             equal node.children().get(3)?.innerHTML, 'Product Four'
-      , ASYNC_TEST_DELAY * 2
+      , ASYNC_TEST_DELAY * 3
 
 asyncTest "hasMany adds new related model instances to its set", ->
   @Store.find 1, (err, store) =>
     throw err if err
-    addedProduct = new @Product(name: 'Product Four', store_id: store.id)
+    addedProduct = new @Product(name: 'Product Four', store_id: store.get('id'))
     addedProduct.save (err, savedProduct) =>
       ok store.get('products').has(savedProduct)
       QUnit.start()

@@ -61,7 +61,7 @@ asyncTest "hasOne associations are loaded via JSON", 3, ->
   @Store.find 2, (err, store) =>
     product = store.get 'product'
     delay =>
-      equals productLoadSpy.callCount, 0
+      equal productLoadSpy.callCount, 0
       equal product.get('id'), 3
       equal product.get('name'), "JSON Product"
 
@@ -81,12 +81,12 @@ asyncTest "hasOne associations are saved", 5, ->
   storeSaveSpy = spyOn store, 'save'
   store.save (err, record) =>
     equal storeSaveSpy.callCount, 1
-    equal product.get('store_id'), record.id
+    equal product.get('store_id'), record.get('id')
 
-    storedJSON = @storeAdapter.storage["stores#{record.id}"]
+    storedJSON = @storeAdapter.storage["stores#{record.get('id')}"]
     deepEqual storedJSON, store.toJSON()
     # hasOne saves inline save by default
-    deepEqual storedJSON.product, {name: "Gizmo", store_id: record.id}
+    deepEqual storedJSON.product, {name: "Gizmo", store_id: record.get('id')}
 
     @Store.find record.get('id'), (err, store2) =>
       deepEqual store2.toJSON(), storedJSON

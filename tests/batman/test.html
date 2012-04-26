@@ -17,8 +17,8 @@
     <script type="text/coffeescript" src="../../src/extras/batman.rails.coffee"></script>
     <script type="text/coffeescript" src="../../src/extras/batman.i18n.coffee"></script>
     <script type="text/coffeescript" src="../../src/extras/batman.paginator.coffee"></script>
-    <script type="text/coffeescript">Batman.exportGlobals()</script>
     <script type="text/coffeescript" src="model/model_helper.coffee"></script>
+    <script type="text/coffeescript" src="model/associations/polymorphic_association_helper.coffee"></script>
     <script type="text/coffeescript" src="storage_adapter/storage_adapter_helper.coffee"></script>
     <script type="text/coffeescript" src="storage_adapter/rest_storage_helper.coffee"></script>
     <script type="text/coffeescript" src="view/view_helper.coffee"></script>
@@ -38,7 +38,9 @@
     <script type="text/coffeescript" src="model/associations/belongs_to_test.coffee"></script>
     <script type="text/coffeescript" src="model/associations/has_many_test.coffee"></script>
     <script type="text/coffeescript" src="model/associations/has_one_test.coffee"></script>
-    <script type="text/coffeescript" src="model/associations/polymorphic_association_test.coffee"></script>
+    <script type="text/coffeescript" src="model/associations/polymorphic_belongs_to_test.coffee"></script>
+    <script type="text/coffeescript" src="model/associations/polymorphic_has_one_test.coffee"></script>
+    <script type="text/coffeescript" src="model/associations/polymorphic_has_many_test.coffee"></script>
     <script type="text/coffeescript" src="model/class_querying_test.coffee"></script>
     <script type="text/coffeescript" src="model/dirty_keys_test.coffee"></script>
     <script type="text/coffeescript" src="model/encoders_test.coffee"></script>
@@ -83,24 +85,27 @@
     <script type="text/coffeescript" src="utilities/inflector_test.coffee"></script>
     <script type="text/coffeescript" src="utilities/interpolation_test.coffee"></script>
     <script type="text/coffeescript" src="utilities/mixin_test.coffee"></script>
+    <script type="text/coffeescript" src="utilities/extend_test.coffee"></script>
     <script type="text/coffeescript" src="utilities/polymorphic_object_access_test.coffee"></script>
     <script type="text/coffeescript" src="utilities/set_immediate_test.coffee"></script>
     <script type="text/coffeescript" src="utilities/state_machine_test.coffee"></script>
     <script type="text/coffeescript" src="utilities/_batman_test.coffee"></script>
     <script type="text/coffeescript" src="view/class_binding_test.coffee"></script>
+    <script type="text/coffeescript" src="view/dom_operations_test.coffee"></script>
     <script type="text/coffeescript" src="view/event_binding_test.coffee"></script>
     <script type="text/coffeescript" src="view/filter_parsing_test.coffee"></script>
     <script type="text/coffeescript" src="view/filters_test.coffee"></script>
     <script type="text/coffeescript" src="view/formfor_rendering_test.coffee"></script>
     <script type="text/coffeescript" src="view/loop_rendering_test.coffee"></script>
+    <script type="text/coffeescript" src="view/model_binding_test.coffee"></script>
     <script type="text/coffeescript" src="view/nested_loop_rendering_test.coffee"></script>
     <script type="text/coffeescript" src="view/oneway_binding_test.coffee"></script>
     <script type="text/coffeescript" src="view/partial_rendering_test.coffee"></script>
+    <script type="text/coffeescript" src="view/render_cache_test.coffee"></script>
     <script type="text/coffeescript" src="view/route_rendering_test.coffee"></script>
     <script type="text/coffeescript" src="view/select_rendering_test.coffee"></script>
     <script type="text/coffeescript" src="view/simple_rendering_test.coffee"></script>
     <script type="text/coffeescript" src="view/style_binding_test.coffee"></script>
-    <script type="text/coffeescript" src="view/unbinding_test.coffee"></script>
     <script type="text/coffeescript" src="view/view_binding_test.coffee"></script>
     <script type="text/coffeescript" src="view/view_test.coffee"></script>
     <script type="text/coffeescript" src="view/view_subclass_test.coffee"></script>
@@ -111,7 +116,9 @@
 <body>
     <h1 id="qunit-header">Batman Test Suite</h1>
     <h2 id="qunit-banner"></h2>
+    <div id="qunit-testrunner-toolbar"></div>
     <h2 id="qunit-userAgent"></h2>
     <ol id="qunit-tests"></ol>
+    <div id="qunit-fixture">test markup, will be hidden</div>
 </body>
 </html>

@@ -2,8 +2,7 @@ helpers = if typeof require is 'undefined' then window.viewHelpers else require 
 
 QUnit.module 'Batman.View yield, contentFor, and replace rendering'
   teardown: ->
-    Batman.DOM._yieldContainers = {}
-    Batman.DOM._yieldExecutors = {}
+    Batman.DOM.Yield.reset()
 
 asyncTest 'it should insert content into yields when the content comes before the yield', 1, ->
   source = '''
@@ -11,7 +10,7 @@ asyncTest 'it should insert content into yields when the content comes before th
   <div data-yield="baz" id="test">erased</div>
   '''
   node = helpers.render source, {}, (node) ->
-    equals node.children(0).html(), "chunky bacon"
+    equal node.children(0).html(), "chunky bacon"
     QUnit.start()
 
 asyncTest 'it should insert content into yields when the content comes after the yield', 1, ->
@@ -20,7 +19,7 @@ asyncTest 'it should insert content into yields when the content comes after the
   <span data-contentfor="baz">chunky bacon</span>
   '''
   node = helpers.render source, {}, (node) ->
-    equals node.children(0).html(), "chunky bacon"
+    equal node.children(0).html(), "chunky bacon"
     QUnit.start()
 
 asyncTest 'bindings within yielded content should continue to update when the content comes before the yield', 2, ->
@@ -30,9 +29,9 @@ asyncTest 'bindings within yielded content should continue to update when the co
   '''
   context = Batman string: "chunky bacon"
   helpers.render source, context, (node) ->
-    equals node.find('p').html(), "chunky bacon"
+    equal node.find('p').html(), "chunky bacon"
     context.set 'string', 'why so serious'
-    equals node.find('p').html(), "why so serious"
+    equal node.find('p').html(), "why so serious"
     QUnit.start()
 
 asyncTest 'bindings within yielded content should continue to update when the content comes after the yield', 2, ->
@@ -42,9 +41,9 @@ asyncTest 'bindings within yielded content should continue to update when the co
   '''
   context = Batman string: "chunky bacon"
   helpers.render source, context, (node) ->
-    equals node.find('p').html(), "chunky bacon"
+    equal node.find('p').html(), "chunky bacon"
     context.set 'string', 'why so serious'
-    equals node.find('p').html(), "why so serious"
+    equal node.find('p').html(), "why so serious"
     QUnit.start()
 
 asyncTest 'bindings within nested yielded content should continue to update', 2, ->
@@ -57,9 +56,9 @@ asyncTest 'bindings within nested yielded content should continue to update', 2,
   '''
   context = Batman string: "chunky bacon"
   helpers.render source, context, (node) ->
-    equals node.find('p').html(), "chunky bacon"
+    equal node.find('p').html(), "chunky bacon"
     context.set 'string', 'why so serious'
-    equals node.find('p').html(), "why so serious"
+    equal node.find('p').html(), "why so serious"
     QUnit.start()
 
 asyncTest 'event handlers within yielded content should continue to fire when the content comes before the yield', 1, ->
@@ -108,8 +107,8 @@ asyncTest 'it should yield multiple contentfors that render into the same yield'
   <span data-contentfor="mult">spicy sausage</span>
   '''
   node = helpers.render source, {}, (node) ->
-    equals node.children(0).first().html(), "chunky bacon"
-    equals node.children(0).first().next().html(), "spicy sausage"
+    equal node.children(0).first().html(), "chunky bacon"
+    equal node.children(0).first().next().html(), "spicy sausage"
     QUnit.start()
 
 asyncTest 'it shouldn\'t go nuts if the content is already inside the yield', 1, ->
@@ -117,7 +116,7 @@ asyncTest 'it shouldn\'t go nuts if the content is already inside the yield', 1,
               <span data-contentfor="baz">chunky bacon</span>
             </div>'
   node = helpers.render source, {}, (node) ->
-    equals node.children(0).html(), "chunky bacon"
+    equal node.children(0).html(), "chunky bacon"
     QUnit.start()
 
 asyncTest 'it should render content even if the yield doesn\'t exist yet', 1, ->
@@ -154,19 +153,27 @@ asyncTest 'data-replace should replace content without breaking contentfors', 2,
     equal node.children(0).first().next().html(), 'appends'
     QUnit.start()
 
-asyncTest 'data-replace should remove bindings on replaced content', ->
-  source = '''
-    <div data-yield="foo"></div>
-    <div data-contentfor="foo"><span data-bind="expensive"></span></div>
-    <div data-replace="foo"><input type="button" data-bind="simple"></input></div>
-  '''
-  context = new Batman.Object
-    simple: 'simple'
-  context.accessor 'expensive', spy = createSpy ->
-    context.get 'simple'
+asyncTest "views should be able to yield more than once", ->
+  viewInstance = false
+  class TestView extends Batman.View
+    cached: true
+    constructor: ->
+      viewInstance = @
+      super
 
-  helpers.render source, context, (node) ->
-    oldCallCount = spy.callCount
-    context.set 'simple', 'updated'
-    equal spy.callCount, oldCallCount
+  source = '''
+    <div class="yield" data-yield="foo"></div>
+    <span class="view" data-view="TestView"><div data-contentfor="foo">testing</div></span>
+  '''
+
+  context = Batman {TestView}
+  helpers.render source, false, context, (node) ->
+    destination = node.childNodes[0]
+    source = node.childNodes[2]
+    equal destination.innerHTML, '<div data-contentfor="foo">testing</div>'
+    Batman.DOM.removeNode(source)
+    equal destination.innerHTML, ""
+
+    Batman.DOM.appendChild(node, viewInstance.get('node'))
+    equal destination.innerHTML, '<div data-contentfor="foo">testing</div>'
     QUnit.start()

@@ -1,14 +1,17 @@
 helpers = if typeof require is 'undefined' then window.viewHelpers else require './view_helper'
 
-oldDeferEvery = Batman.DOM.IteratorBinding::deferEvery
+oldIteratorDeferEvery = Batman.DOM.IteratorBinding::deferEvery
+oldRendererDeferEvery = Batman.Renderer::deferEvery
 getSelections = (node) -> node.find('option').map((i, node) -> !!node.selected).toArray()
 getContents = (node) -> node.find('option').map((i, node) -> node.innerHTML).toArray()
 
 QUnit.module 'Batman.View select bindings'
   setup: ->
-    Batman.DOM.IteratorBinding.deferEvery = false
+    Batman.DOM.IteratorBinding::deferEvery = false
+    Batman.Renderer::deferEvery = false
   teardown: ->
-    Batman.DOM.IteratorBinding::deferEvery = oldDeferEvery
+    Batman.DOM.IteratorBinding::deferEvery = oldIteratorDeferEvery
+    Batman.Renderer::deferEvery = oldRendererDeferEvery
 
 asyncTest 'it should bind the value of a select box and update when the javascript land value changes', 2, ->
   context = Batman
@@ -172,10 +175,10 @@ asyncTest 'it binds multiple select options created by a foreach and remains con
       deepEqual getContents(node), ['crono', 'mario']
       deepEqual getSelections(node), [true, false]
 
-asyncTest 'should be able to remove bound select nodes', 2, ->
+asyncTest 'should be able to destroy bound select nodes', 2, ->
   context = new Batman.Object selected: "foo"
   helpers.render '<select data-bind="selected"><option value="foo">foo</option></select>', context, (node) ->
-    Batman.DOM.removeNode(node[0])
+    Batman.DOM.destroyNode(node[0])
     deepEqual Batman.data(node[0]), {}
     deepEqual Batman._data(node[0]), {}
     QUnit.start()
