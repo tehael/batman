@@ -1554,10 +1554,6 @@ class Batman.SetIntersection extends Batman.BinarySetOperation
   _itemsWereRemovedFromSource: (source, opposite, items...) -> @remove items...
 
 
-BatmanObject.classAccessor 'className', ->
-  developer.error("Please give the class #{$functionName(@)} a className property for minification saftey!") if Batman.config.minificationErrors
-  $functionName(@)
-
 # State Machines
 # --------------
 
@@ -2464,14 +2460,13 @@ class Batman.RenderCache extends Batman.Hash
 class Batman.Controller extends Batman.Object
   @singleton 'sharedController'
 
-  @classAccessor 'className', ->
-    if @className?
-      @className
-    else if @::routingKey?
-      helpers.camelize(@::routingKey)
-    else
-      developer.error("Please define className on the class or routingKey on the prototype of #{$functionName(@)} in order for your controller to be minification safe.") if Batman.config.minificationErrors
-      $functionName(@).replace('Controller', '')
+  @wrapAccessor 'routingKey', (core) ->
+    get: ->
+      if @routingKey?
+        @routingKey
+      else
+        developer.error("Please define `routingKey` on the prototype of #{$functionName(@constructor)} in order for your controller to be minification safe.") if Batman.config.minificationErrors
+        $functionName(@constructor).replace(/Controller$/, '')
 
   @accessor '_renderContext', -> Batman.RenderContext.root().descend(@)
 
@@ -2510,7 +2505,7 @@ class Batman.Controller extends Batman.Object
   # You shouldn't call this method directly. It will be called by the dispatcher when a route is called.
   # If you need to call a route manually, use `$redirect()`.
   dispatch: (action, params = {}) ->
-    params.controller ||= @constructor.get 'className'
+    params.controller ||= @get 'routingKey'
     params.action ||= action
     params.target ||= @
 
@@ -2530,7 +2525,7 @@ class Batman.Controller extends Batman.Object
     $redirect(redirectTo) if redirectTo
 
   executeAction: (action, params = @get('params')) ->
-    developer.assert @[action], "Error! Controller action #{@constructor.get 'className'}.#{action} couldn't be found!"
+    developer.assert @[action], "Error! Controller action #{@get 'routingKey'}.#{action} couldn't be found!"
 
     @_actionFrames.push frame = {actionTaken: false, action: action}
 
@@ -2552,7 +2547,7 @@ class Batman.Controller extends Batman.Object
 
     if frame
       if frame.actionTaken
-        developer.warn "Warning! Trying to redirect but an action has already be taken during #{@constructor.get('className')}.#{frame.action || @get('action')}}"
+        developer.warn "Warning! Trying to redirect but an action has already be taken during #{@get('routingKey')}.#{frame.action || @get('action')}}"
 
       frame.actionTaken = true
 
@@ -2574,7 +2569,7 @@ class Batman.Controller extends Batman.Object
       options.into ||= 'main'
 
     if frame && frame.actionTaken && @_renderedYields[options.into]
-      developer.warn "Warning! Trying to render but an action has already be taken during #{@get('className')}.#{action} on yield #{options.into}"
+      developer.warn "Warning! Trying to render but an action has already be taken during #{@get('routingKey')}.#{action} on yield #{options.into}"
 
     # Ensure the frame is marked as having had an action executed so that render false prevents the implicit render.
     frame?.actionTaken = true
@@ -2583,9 +2578,9 @@ class Batman.Controller extends Batman.Object
     @_renderedYields?[options.into] = true
 
     if not options.view
-      options.viewClass ||= Batman.currentApp?[helpers.camelize("#{@constructor.get('className')}_#{action}_view")] || Batman.View
+      options.viewClass ||= Batman.currentApp?[helpers.camelize("#{@get('routingKey')}_#{action}_view")] || Batman.View
       options.context ||= @get('_renderContext')
-      options.source ||= helpers.underscore(@constructor.get('className') + '/' + action)
+      options.source ||= helpers.underscore(@get('routingKey') + '/' + action)
       view = @renderCache.viewForOptions(options)
     else
       view = options.view
@@ -2708,8 +2703,6 @@ class Batman.Model extends Batman.Object
   @classAccessor 'className', ->
     if @className?
       @className
-    else if @::storageKey?
-      helpers.camelize(helpers.singularize(@::storageKey))
     else
       developer.error("Please define className on the class or storageKey on the prototype of #{$functionName(@)}in order for your model to be minification safe.") if Batman.config.minificationErrors
       $functionName(@)
