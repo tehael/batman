@@ -5522,10 +5522,14 @@ class Batman.DOM.RouteBinding extends Batman.DOM.AbstractBinding
         @get('dispatcher')?.pathFromParams(value)
 
 class Batman.DOM.ViewBinding extends Batman.DOM.AbstractBinding
+  bindImmediately: false
+
   constructor: ->
     super
     @renderer.prevent 'rendered'
     @node.removeAttribute 'data-view'
+
+    @bind()
 
   dataChange: (viewClassOrInstance) ->
     return unless viewClassOrInstance?
@@ -5533,6 +5537,9 @@ class Batman.DOM.ViewBinding extends Batman.DOM.AbstractBinding
       @view = viewClassOrInstance
       @view.set 'context', @renderContext
       @view.set 'node', @node
+
+      @view._rendered = false
+      @view.render?(@node)
     else
       @view = new viewClassOrInstance
         node: @node
