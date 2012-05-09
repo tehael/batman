@@ -36,11 +36,11 @@ asyncTest 'it should wait to fire the parent\'s ready event until the instantiat
 
 asyncTest 'it should set the node on already instantiated custom views', 2, ->
   source = '<div data-view="someCustomView">foo</div>'
-  view = new @MockViewClass
-  context = Batman({someCustomView: view})
+  view = new Batman.View(html: '<div data-bind="foo"></div>')
+  context = Batman({foo: 'bar', someCustomView: view})
 
   delay =>
-    equal view.get('node').innerHTML, 'foo'
+    equal view.get('node').firstChild.innerHTML, 'bar'
     ok view.get('context') instanceof Batman.RenderContext
 
   helpers.render source, context, ->
