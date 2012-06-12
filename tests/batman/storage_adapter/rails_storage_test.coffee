@@ -50,3 +50,48 @@ asyncTest 'creating in storage: should callback with the record with errors on i
     ok record
     equal record.get('errors').length, 2
     QUnit.start()
+
+asyncTest 'creating in storage: should callback with the record with errors applied to hasMany associated records if server side validation fails', ->
+  MockRequest.expect
+    url: '/products'
+    method: 'POST'
+  , error:
+      status: 422
+      response: JSON.stringify
+        images: [{src: ["can't be blank"]}]
+        name: ["can't be test", "must be valid"]
+
+  class @Image extends Batman.Model
+    @encode 'src'
+
+  @Product.hasMany 'images', {namespace: @, autoload: false}
+  product = new @Product(name: "test")
+  product.get('images').add(new @Image(src: ""))
+  @productAdapter.perform 'create', product, {}, (err, record) =>
+    ok err instanceof Batman.ErrorsSet
+    ok record
+    equal record.get('errors').length, 0
+    equal record.get('images.first.errors').length, 1
+    QUnit.start()
+
+asyncTest 'creating in storage: should callback with the record with errors applied to a belongsTo associated record if server side validation fails', ->
+  MockRequest.expect
+    url: '/products'
+    method: 'POST'
+  , error:
+      status: 422
+      response: JSON.stringify
+        collection: {conditions: ["can't be blank"]}
+
+  class @Collection extends Batman.Model
+    @encode 'conditions'
+
+  @Product.belongsTo 'collection', {namespace: @, autoload: false, saveInline: true}
+  product = new @Product(name: "test")
+  product.set('collection', new @Collection(conditions: ""))
+  @productAdapter.perform 'create', product, {}, (err, record) =>
+    ok err instanceof Batman.ErrorsSet
+    ok record
+    equal record.get('errors').length, 0
+    equal record.get('collection.errors').length, 1
+    QUnit.start()

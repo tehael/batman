@@ -58,6 +58,29 @@ class Batman.RailsStorage extends Batman.RestStorage
     url + '.json'
 
   _errorsFrom422Response: (response) -> JSON.parse(response)
+  _addErrorsToRecord: (givenErrors, record) ->
+    Batman.initializeObject(record.constructor)
+    for key, errors of givenErrors
+      # Array of objects for has many
+      if association = record.constructor._batman.get('associations')?.getByLabel(key)
+        if association.isSingular
+          if relatedRecord = association.getFromAttributes(record)
+            @_addErrorsToRecord(errors, relatedRecord)
+          else if proxy = record.associationProxy(key) && proxy.get('loaded')
+            relatedRecord = proxy.get('target')
+            @_addErrorsToRecord(proxy.get('target'), errors)
+        else
+          relatedRecords = association.getFromAttributes(record) || association.setForRecord(record)
+          relatedRecords = relatedRecords.toArray() if relatedRecords.toArray?
+          for relatedErrors, i in errors
+            relatedRecord = relatedRecords[i]
+            continue if not relatedRecord
+            @_addErrorsToRecord(relatedErrors, relatedRecord)
+      else
+        # Array for the record itsself
+        for validationError in errors
+          record.get('errors').add(key, validationError)
+      return
 
   @::after 'update', 'create', (env, next) ->
     record = env.subject
@@ -71,9 +94,7 @@ class Batman.RailsStorage extends Batman.RestStorage
           env.error = extractionError
           return next()
 
-        for key, errorsArray of validationErrors
-          for validationError in errorsArray
-            record.get('errors').add(key, validationError)
+        @_addErrorsToRecord(validationErrors, record)
 
         env.result = record
         env.error = record.get('errors')
