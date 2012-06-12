@@ -2,13 +2,15 @@
 <html>
 <head>
     <title>Hello Batman</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
 
     <link rel="stylesheet" href="resources/reset.css" type="text/css">
     <link rel="stylesheet" href="resources/hello.css" type="text/css">
 
-    <script src="lib/coffee-script.js"></script>
-    <script src="lib/es5-shim.js"></script>
-    <script src="lib/dist/batman.min.js"></script>
+    <script src="../lib/coffee-script.js"></script>
+    <script src="../lib/es5-shim.js"></script>
+    <script src="../lib/batman.js"></script>
+    <script src="../lib/batman.solo.js"></script>
 </head>
 
 <body>
@@ -38,8 +40,8 @@
       class Hello extends Batman.App
 
       class Person extends Batman.Model
-        @accessor 'fullName', -> "#{@get 'firstName'} #{@get 'lastName'}"
-        @accessor 'hasName', -> @get('fullName').length > 1
+        @accessor 'fullName', -> "#{@get('firstName') or ''} #{@get('lastName') or ''}"
+        @accessor 'hasName', -> @get('firstName') or @get('lastName')
 
         reset: =>
           @set 'firstName', ''
