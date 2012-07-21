@@ -18,6 +18,8 @@
     #{ js('/src/extras/batman.i18n.js') }
 
     #{ js('/src/extras/batman.paginator.js') }
+    #{ js('/src/extras/batman.local_storage.js') }
+    #{ js('/src/extras/batman.session_storage.js') }
 
     #{ js('/tests/batman/tests.js') }
 </head>

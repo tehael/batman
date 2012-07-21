@@ -1,5 +1,3 @@
-#= require ./storage_adapter
-
 class Batman.LocalStorage extends Batman.StorageAdapter
   constructor: ->
     return null if typeof window.localStorage is 'undefined'
