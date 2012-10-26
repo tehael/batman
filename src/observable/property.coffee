@@ -85,9 +85,14 @@ class Batman.Property
   hasObservers: -> @observers().length > 0
 
   updateSourcesFromTracker: ->
+    oldSources = @sources
     newSources = @constructor.popSourceTracker()
     handler = @sourceChangeHandler()
-    @sources.forEach (source) -> source.event('change').removeHandler(handler) unless newSources.has(source)
+    oldSources.forEach (source) ->
+      unless newSources.has(source)
+        source.event('change').removeHandler(handler)
+      else
+        newSources.remove(source)
     @sources = newSources
     @sources.forEach (source) -> source.event('change').addHandler(handler)
 
@@ -137,16 +142,10 @@ class Batman.Property
 
   setValue: (val) ->
     return unless set = @accessor().set
-    @_changeValue -> set.call(@base, @key, val)
-  unsetValue: ->
-    return unless unset = @accessor().unset
-    @_changeValue -> unset.call(@base, @key)
-
-  _changeValue: (block) ->
     @cached = no
     @constructor.pushDummySourceTracker()
     try
-      result = block.apply(this)
+      set.call(@base, @key, val)
       @refresh()
     finally
       @constructor.popSourceTracker()
