@@ -189,7 +189,7 @@ class Batman.Property
     @base._batman?.properties?.unset(@key)
     @isDead = true
 
-  fire: -> @changeEvent().fire(arguments..., @key)
+  fire: (newValue, oldValue) -> @changeEvent().fire(newValue, oldValue, @key)
 
   isolate: ->
     if @_isolationCount is 0
