@@ -64,6 +64,7 @@ class Batman.LocalStorage extends Batman.StorageAdapter
       catch error
         env.error = error
         return next()
+    # TODO: Remove call to fromJSON
     env.subject._withoutDirtyTracking -> @fromJSON env.recordAttributes
     next()
 
@@ -73,6 +74,7 @@ class Batman.LocalStorage extends Batman.StorageAdapter
 
   @::after 'readAll', @skipIfError (env, next) ->
     env.result = env.records = for recordAttributes in env.recordsAttributes
+      # TODO: Remove instance of getRecordFromData
       @getRecordFromData(recordAttributes, env.subject)
     next()
 

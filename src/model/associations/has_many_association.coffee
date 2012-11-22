@@ -33,12 +33,22 @@ class Batman.HasManyAssociation extends Batman.PluralAssociation
 
       jsonArray
 
+  #
+  # INPUT:  Object
+  # OUTPUT: Object
+  #
   decoder: ->
     association = @
     (data, key, _, __, parentRecord) ->
       if relatedModel = association.getRelatedModel()
         existingRelations = association.getFromAttributes(parentRecord) || association.setForRecord(parentRecord)
         newRelations = existingRelations.filter((relation) -> relation.isNew()).toArray()
+
+        #
+        # As we move over all the nodes we should pass them to _mapIdentity
+        # If _mapIdentity has the objects it will return them
+        # Otherwise, it will call fromJSON and return the new object
+        #
         for jsonObject in data
           existingRecord = relatedModel.get('loaded').indexedByUnique('id').get(jsonObject[relatedModel.get('primaryKey')]) #relatedModel.get('primaryKey')
           if existingRecord?

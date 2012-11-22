@@ -155,9 +155,17 @@ class Batman.Model extends Batman.Object
     record._withoutDirtyTracking -> @fromJSON(json)
     @_mapIdentity(record)
 
+  #
+  # INPUT:  Object
+  # OUTPUT: Batman.Model
+  #
   @_mapIdentity: (record) ->
+    # if record.id is blank or undefined return the record
     if typeof (id = record.get('id')) == 'undefined' || id == ''
       return record
+    # if record.id is set
+    # -- if the record already exists then update the record
+    # -- if the record doesn't exist then add the record
     else
       existing = @get("loaded.indexedBy.id").get(id)?.toArray()[0]
       if existing
@@ -168,6 +176,11 @@ class Batman.Model extends Batman.Object
         @get('loaded').add(record)
         record
 
+  #
+  # INPUT:  Object
+  # OUTPUT: Batman.Model
+  # TODO:   We need to convert the Object into a Batman.Model
+  #
   @_doStorageOperation: (operation, options, callback) ->
     Batman.developer.assert @::hasStorage(), "Can't #{operation} model #{Batman.functionName(@constructor)} without any storage adapters!"
     adapter = @::_batman.get('storage')
@@ -292,6 +305,11 @@ class Batman.Model extends Batman.Object
 
   # `fromJSON` uses the various decoders for each key to generate a record instance from the JSON
   # stored in whichever storage mechanism.
+
+  #
+  # INPUT:  Object
+  # OUTPUT: Batman.Model
+  #
   fromJSON: (data) ->
     obj = {}
 
@@ -453,6 +471,11 @@ class Batman.Model extends Batman.Object
     else
       false
 
+  #
+  # INPUT:  Object
+  # OUTPUT: Batman.Model
+  # TODO:   We need to convert the Object into a Batman.Model
+  #
   _doStorageOperation: (operation, options, callback) ->
     Batman.developer.assert @hasStorage(), "Can't #{operation} model #{Batman.functionName(@constructor)} without any storage adapters!"
     adapter = @_batman.get('storage')

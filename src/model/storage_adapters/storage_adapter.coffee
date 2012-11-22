@@ -55,6 +55,7 @@ class Batman.StorageAdapter extends Batman.Object
     model = record?.constructor || @model
     model.get('storageKey') || Batman.helpers.pluralize(Batman.helpers.underscore(model.get('resourceName')))
 
+  # TODO: Remove getRecordFromData from storage adapter
   getRecordFromData: (attributes, constructor = @model) ->
     record = new constructor()
     record._withoutDirtyTracking -> @fromJSON(attributes)
