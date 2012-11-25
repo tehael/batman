@@ -163,6 +163,7 @@ asyncTest "AssociationSet does not become loaded when an existing record is save
   @Store.find 1, (err, store) ->
     equal store.get('products').get('loaded'), false
     store.save (err, store) ->
+      debugger
       equal store.get('products').get('loaded'), false
       QUnit.start()
 

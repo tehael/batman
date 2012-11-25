@@ -14,27 +14,30 @@ class TestStorageAdapter extends Batman.StorageAdapter
   update: (record, options, callback) ->
     id = record.get('id')
     if id
-      @storage[@storageKey(record) + id] = record.toJSON()
-      callback(undefined, record, @env)
+      object = record.toJSON()
+      @storage[@storageKey(record) + id] = object
+
+      callback(undefined, object, @env)
     else
       callback(new Error("Couldn't get record primary key."))
 
   create: (record, options, callback) ->
     id = @_setRecordID(record)
     if id
-      @storage[@storageKey(record) + id] = record.toJSON()
-      record._withoutDirtyTracking -> @fromJSON {id: id}
-      callback(undefined, record, @env)
+      object = record.toJSON()
+      @storage[@storageKey(record) + id] = object
+      object['id'] = id
+      debugger
+      callback(undefined, object, @env)
     else
       callback(new Error("Couldn't get record primary key."))
 
   read: (record, options, callback) ->
     id = record.get('id')
     if id
-      attrs = @storage[@storageKey(record) + id]
-      if attrs
-        record._withoutDirtyTracking -> @fromJSON(attrs)
-        callback(undefined, record, @env)
+      object = @storage[@storageKey(record) + id]
+      if object
+        callback(undefined, object, @env)
       else
         callback(new Error("Couldn't find record!"))
     else
@@ -50,7 +53,7 @@ class TestStorageAdapter extends Batman.StorageAdapter
           break
       records.push data if match
 
-    callback(undefined, @getRecordFromData(record) for record in records, @env)
+    callback(undefined, records, @env)
 
   destroy: (record, options, callback) ->
     id = record.get('id')

@@ -31,7 +31,11 @@ class Batman.HasManyAssociation extends Batman.PluralAssociation
             relationJSON[association.foreignKey] = record.get(association.primaryKey)
           jsonArray.push relationJSON
 
-      jsonArray
+      #
+      # when we encoded hasMany relationships for sets that we're not loaded
+      # we shouldn't respond an empty array...?
+      #
+      jsonArray if jsonArray.length > 0
 
   #
   # INPUT:  Object
@@ -42,7 +46,6 @@ class Batman.HasManyAssociation extends Batman.PluralAssociation
     (data, key, _, __, parentRecord) ->
       if relatedModel = association.getRelatedModel()
         existingRelations = association.getFromAttributes(parentRecord) || association.setForRecord(parentRecord)
-        newRelations = existingRelations.filter((relation) -> relation.isNew()).toArray()
 
         #
         # As we move over all the nodes we should pass them to _mapIdentity
@@ -50,16 +53,7 @@ class Batman.HasManyAssociation extends Batman.PluralAssociation
         # Otherwise, it will call fromJSON and return the new object
         #
         for jsonObject in data
-          existingRecord = relatedModel.get('loaded').indexedByUnique('id').get(jsonObject[relatedModel.get('primaryKey')]) #relatedModel.get('primaryKey')
-          if existingRecord?
-            record = existingRecord._withoutDirtyTracking -> @fromJSON jsonObject
-          else if newRelations.length > 0
-            savedRecord = newRelations.shift()
-            record = savedRecord._withoutDirtyTracking -> @fromJSON jsonObject
-          else
-            newRecord = new relatedModel()
-            record = newRecord._withoutDirtyTracking -> @fromJSON jsonObject
-          record = relatedModel._mapIdentity(record)
+          record = relatedModel._mapIdentity(jsonObject)
           existingRelations.add record
 
           if association.options.inverseOf

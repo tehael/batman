@@ -73,6 +73,7 @@ asyncTest "belongsTo supports inline saving", 1, ->
   metafield.set 'subject', store
   metafield.save (err, record) =>
     deepEqual storageAdapter.storage["inline_metafields#{record.get('id')}"],
+      id: 11
       key: "SEO Title"
       subject: {name: "Inline Store"}
       subject_type: 'store'

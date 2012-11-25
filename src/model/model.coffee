@@ -106,10 +106,12 @@ class Batman.Model extends Batman.Object
   @find: (id, callback) ->
     @findWithOptions(id, undefined, callback)
 
+  # we can't create a record and always add it to the loaded set 
+  # because if we find an object that already exists the loaded set will
+  # get larger and larger
   @findWithOptions: (id, options = {}, callback) ->
     Batman.developer.assert callback, "Must call find with a callback!"
-    record = new @()
-    record._withoutDirtyTracking -> @set 'id', id
+    record = new @(id)
     record.loadWithOptions options, callback
     return record
 
@@ -151,30 +153,27 @@ class Batman.Model extends Batman.Object
     record
 
   @createFromJSON: (json) ->
-    record = new this
-    record._withoutDirtyTracking -> @fromJSON(json)
-    @_mapIdentity(record)
+    @_mapIdentity(json)
 
   #
   # INPUT:  Object
   # OUTPUT: Batman.Model
   #
   @_mapIdentity: (record) ->
-    # if record.id is blank or undefined return the record
-    if typeof (id = record.get('id')) == 'undefined' || id == ''
-      return record
-    # if record.id is set
-    # -- if the record already exists then update the record
-    # -- if the record doesn't exist then add the record
+    if typeof (id = record[@get('primaryKey')]) == 'undefined' || id == ''
+      # if record.id is blank or undefined return the record
+      newRecord = new this
+      newRecord._withoutDirtyTracking -> @fromJSON(record)
+    else if existing = @get("loaded.indexedBy.id").get(id)?.toArray()[0]
+      # if record.id is set and the record already exists then update the record
+      existing._withoutDirtyTracking -> @updateAttributes(record)
+      existing
     else
-      existing = @get("loaded.indexedBy.id").get(id)?.toArray()[0]
-      if existing
-        existing._withoutDirtyTracking ->
-          @updateAttributes(record.get('attributes')?.toObject() || {})
-        existing
-      else
-        @get('loaded').add(record)
-        record
+      # if record.id is set and the record doesn't exist then add the record
+      newRecord = new this
+      newRecord = newRecord._withoutDirtyTracking -> @fromJSON(record)
+      @get('loaded').add(newRecord)
+      newRecord
 
   #
   # INPUT:  Object
@@ -277,9 +276,7 @@ class Batman.Model extends Batman.Object
   isNew: -> typeof @get('id') is 'undefined'
   isDirty: -> @get('lifecycle.state') == 'dirty'
 
-  updateAttributes: (attrs) ->
-    @mixin(attrs)
-    @
+  updateAttributes: (attrs) -> @fromJSON(attrs)
 
   toString: ->
     "#{@constructor.get('resourceName')}: #{@get('id')}"
@@ -311,6 +308,7 @@ class Batman.Model extends Batman.Object
   # OUTPUT: Batman.Model
   #
   fromJSON: (data) ->
+    # console.log data
     obj = {}
 
     encoders = @_batman.get('encoders')
@@ -358,6 +356,10 @@ class Batman.Model extends Batman.Object
       @_doStorageOperation 'read', options, (err, record, env) =>
         unless err
           @get('lifecycle').loaded()
+          #
+          # on Model#find we get to this point and have a record with the id set, but it isn't in the loaded set
+          # we call mapIdentity and it doesn't find that record and creates a new record without an id
+          #
           record = @constructor._mapIdentity(record)
         else
           @get('lifecycle').error()
@@ -397,13 +399,13 @@ class Batman.Model extends Batman.Object
 
         @_doStorageOperation storageOperation, {data: options}, (err, record, env) =>
           unless err
+            console.log record
+            record = @constructor._mapIdentity(record)
+            if associations
+              associations.getByType('hasOne')?.forEach (association, label) => association.apply(err, this)
+              associations.getByType('hasMany')?.forEach (association, label) => association.apply(err, this)
             @get('dirtyKeys').clear()
             @get('_dirtiedKeys').clear()
-            if associations
-              record._withoutDirtyTracking ->
-                associations.getByType('hasOne')?.forEach (association, label) -> association.apply(err, record)
-                associations.getByType('hasMany')?.forEach (association, label) -> association.apply(err, record)
-            record = @constructor._mapIdentity(record)
             @get('lifecycle').startTransition endState
           else
             if err instanceof Batman.ErrorsSet

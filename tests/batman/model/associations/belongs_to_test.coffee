@@ -195,6 +195,7 @@ asyncTest "belongsTo supports inline saving", 1, ->
 
   product.save (err, record) =>
     deepEqual storageAdapter.storage["inline_products#{record.get('id')}"],
+      id: 11
       name: "Inline Product"
       store: {name: "Inline Store"}
       collection: {name: "Inline Collection"}

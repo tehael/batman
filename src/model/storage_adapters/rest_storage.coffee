@@ -196,9 +196,7 @@ class Batman.RestStorage extends Batman.StorageAdapter
   @::after 'create', 'read', 'update', @skipIfError (env, next) ->
     if env.json?
       json = @extractFromNamespace(env.json, @recordJsonNamespace(env.subject))
-      # TODO: Remove call to fromJSON
-      env.subject._withoutDirtyTracking -> @fromJSON(json)
-    env.result = env.subject
+      env.result = env.subject = json
     next()
 
   @::after 'readAll', @skipIfError (env, next) ->
@@ -209,9 +207,8 @@ class Batman.RestStorage extends Batman.StorageAdapter
       namespace = @recordJsonNamespace(env.subject.prototype)
       env.recordsAttributes = [@extractFromNamespace(env.json, namespace)]
 
-    env.result = env.records = for jsonRecordAttributes in env.recordsAttributes
-      # TODO: Remove instance of getRecordFromData
-      @getRecordFromData(jsonRecordAttributes, env.subject)
+    env.result = env.records = env.recordsAttributes
+
     next()
 
   @::after 'get', 'put', 'post', 'delete', @skipIfError (env, next) ->
