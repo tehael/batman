@@ -145,7 +145,7 @@ test "getValue() stores the value in .value and sets .cached to true", ->
 
 test "getValue() just returns the .value without hitting the accessor if .cached is true", ->
   property = @baseWithNestedAccessors.property('bar')
-  spy = spyOn(property.accessor(), 'get')
+  spy = spyOn(property.accessor, 'get')
 
   property.cached = yes
   property.value = 'cached'
@@ -154,10 +154,10 @@ test "getValue() just returns the .value without hitting the accessor if .cached
 
 test "getValue() ignores the cache if its accessor has cache: false", ->
   property = @baseWithNestedAccessors.property('baz') # uses Batman.Property.defaultAccessor, which has caching turned off
-  strictEqual property.accessor().cache, false
+  strictEqual property.accessor.cache, false
   strictEqual property.isCachable(), false
 
-  spy = spyOn(property.accessor(), 'get')
+  spy = spyOn(property.accessor, 'get')
   property.cached = yes
   property.value = 'cached'
   strictEqual property.getValue(), @mutableSomething
@@ -333,21 +333,21 @@ test "Property.defaultAccessor does vanilla JS property access", ->
   equal Batman.Property.defaultAccessor.unset.call(obj, 'foo'), 'newVal'
   equal typeof obj.foo, 'undefined'
 
-test "accessor() returns the accessor specified on the base for that key, if present", ->
-  equal @property.accessor(), @customKeyAccessor
+test "accessor returns the accessor specified on the base for that key, if present", ->
+  equal @property.accessor, @customKeyAccessor
 
-test "accessor() returns the accessor specified on the base's prototype for that key, if present", ->
-  equal new Batman.Property(@base, 'baz').accessor(), @prototypeKeyAccessor
+test "accessor returns the accessor specified on the base's prototype for that key, if present", ->
+  equal new Batman.Property(@base, 'baz').accessor, @prototypeKeyAccessor
 
-test "accessor() returns the base's default accessor if none is specified for the key", ->
-  equal @customBaseAccessorProperty.accessor(), @customBaseAccessor
+test "accessor returns the base's default accessor if none is specified for the key", ->
+  equal @customBaseAccessorProperty.accessor, @customBaseAccessor
 
-test "accessor() returns the base's prototype's default accessor if none is specified for key or base instance", ->
+test "accessor returns the base's prototype's default accessor if none is specified for key or base instance", ->
   @base._batman.defaultAccessor = null
-  equal new Batman.Property(@base, 'bar').accessor(), @prototypeBaseAccessor
+  equal new Batman.Property(@base, 'bar').accessor, @prototypeBaseAccessor
 
-test "accessor() returns Property.defaultAccessor if none is specified for key or base", ->
-  equal new Batman.Property({}, 'foo').accessor(), Batman.Property.defaultAccessor
+test "accessor returns Property.defaultAccessor if none is specified for key or base", ->
+  equal new Batman.Property({}, 'foo').accessor, Batman.Property.defaultAccessor
 
 test "getValue() calls the accessor's get(key) method in the context of the property's base", ->
   equal @property.getValue(), 'customKeyValue'

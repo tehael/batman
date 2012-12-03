@@ -43,6 +43,9 @@ class Batman.Property
   @popSourceTracker: -> Batman.Property._sourceTrackerStack.pop()
 
   constructor: (@base, @key) ->
+    @accessor = @constructor.accessorForBaseAndKey(@base, @key)
+    @changeEvent = @event('change')
+
   _isolationCount: 0
   cached: no
   value: null
@@ -61,22 +64,14 @@ class Batman.Property
     @events ||= {}
     @events[key] ||= new eventClass(this, key)
     @events[key]
-  changeEvent: ->
-    event = @event('change')
-    @changeEvent = -> event
-    event
-  accessor: ->
-    accessor = @constructor.accessorForBaseAndKey(@base, @key)
-    @accessor = -> accessor
-    accessor
   eachObserver: (iterator) ->
     key = @key
-    iterator(object) for object in @changeEvent().handlers.slice()
+    iterator(object) for object in @changeEvent.handlers.slice()
     if @base.isObservable
       @base._batman.ancestors (ancestor) ->
         if ancestor.isObservable and ancestor.hasProperty(key)
           property = ancestor.property(key)
-          handlers = property.changeEvent().handlers
+          handlers = property.changeEvent.handlers
           iterator(object) for object in handlers.slice()
   observers: ->
     results = []
@@ -104,12 +99,12 @@ class Batman.Property
 
   isCachable: ->
     return true if @isFinal()
-    cacheable = @accessor().cache
+    cacheable = @accessor.cache
     if cacheable? then !!cacheable else true
 
   isCached: -> @isCachable() and @cached
 
-  isFinal: -> !!@accessor()['final']
+  isFinal: -> !!@accessor['final']
 
   refresh: ->
     @cached = no
@@ -133,13 +128,13 @@ class Batman.Property
     else
       @refresh()
 
-  valueFromAccessor: -> @accessor().get?.call(@base, @key)
+  valueFromAccessor: -> @accessor.get?.call(@base, @key)
 
   setValue: (val) ->
-    return unless set = @accessor().set
+    return unless set = @accessor.set
     @_changeValue -> set.call(@base, @key, val)
   unsetValue: ->
-    return unless unset = @accessor().unset
+    return unless unset = @accessor.unset
     @_changeValue -> unset.call(@base, @key)
 
   _changeValue: (block) ->
@@ -155,18 +150,18 @@ class Batman.Property
 
   forget: (handler) ->
     if handler?
-      @changeEvent().removeHandler(handler)
+      @changeEvent.removeHandler(handler)
     else
-      @changeEvent().clearHandlers()
+      @changeEvent.clearHandlers()
   observeAndFire: (handler) ->
     @observe(handler)
     handler.call(@base, @value, @value, @key)
   observe: (handler) ->
-    @changeEvent().addHandler(handler)
+    @changeEvent.addHandler(handler)
     @getValue() unless @sources?
     this
   observeOnce: (originalHandler) ->
-    event = @changeEvent()
+    event = @changeEvent
     handler = ->
       originalHandler.apply(@, arguments)
       event.removeHandler(handler)
@@ -178,7 +173,7 @@ class Batman.Property
     handler = @sourceChangeHandler()
     source.event('change').removeHandler(handler) for source in @sources.toArray() if @sources
     delete @sources
-    @changeEvent().clearHandlers()
+    @changeEvent.clearHandlers()
 
   lockValue: ->
     @_removeHandlers()
@@ -190,7 +185,7 @@ class Batman.Property
     @base._batman?.properties?.unset(@key)
     @isDead = true
 
-  fire: -> @changeEvent().fire(arguments..., @key)
+  fire: -> @changeEvent.fire(arguments..., @key)
 
   isolate: ->
     if @_isolationCount is 0
