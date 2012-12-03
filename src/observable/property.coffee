@@ -73,7 +73,7 @@ class Batman.Property
     key = @key
     iterator(object) for object in @changeEvent().handlers.slice()
     if @base.isObservable
-      @base._batman.ancestors (ancestor) ->
+      for ancestor in @base._batman.ancestors()
         if ancestor.isObservable and ancestor.hasProperty(key)
           property = ancestor.property(key)
           handlers = property.changeEvent().handlers
