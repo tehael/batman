@@ -18,8 +18,9 @@ class Batman.Property
     if (_bm = base._batman)?
       accessor = _bm.keyAccessors?.get(key)
       if !accessor
-        _bm.ancestors (ancestor) =>
+        for ancestor in _bm.ancestors()
           accessor ||= ancestor._batman?.keyAccessors?.get(key)
+          break if accessor
     accessor or @defaultAccessorForBase(base)
   @forBaseAndKey: (base, key) ->
     if base.isObservable
