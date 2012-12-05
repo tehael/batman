@@ -27,7 +27,6 @@ class TestStorageAdapter extends Batman.StorageAdapter
       object = record.toJSON()
       @storage[@storageKey(record) + id] = object
       object['id'] = id
-      debugger
       callback(undefined, object, @env)
     else
       callback(new Error("Couldn't get record primary key."))

@@ -103,7 +103,7 @@ asyncTest "hasMany associations are loaded and custom url is used", 2, ->
 
 asyncTest "hasMany associations are loaded and custom url function has the parent's context", 3, ->
   @Store._batman.get('associations').get('products').options.url = -> "/stores/#{@get('id')}/products"
-  
+
   associationSpy = spyOn(@productAdapter, 'perform')
 
   @Store.find 1, (err, store) =>
@@ -163,7 +163,6 @@ asyncTest "AssociationSet does not become loaded when an existing record is save
   @Store.find 1, (err, store) ->
     equal store.get('products').get('loaded'), false
     store.save (err, store) ->
-      debugger
       equal store.get('products').get('loaded'), false
       QUnit.start()
 
@@ -261,27 +260,29 @@ asyncTest "hasMany associations can be reloaded", 8, ->
 
 asyncTest "hasMany associations are saved via the parent model", 5, ->
   store = new @Store name: 'Zellers'
-  product1 = new @Product name: 'Gizmo'
-  product2 = new @Product name: 'Gadget'
+  product1 = new @Product name: 'Gizmo', id: 10
+  product2 = new @Product name: 'Gadget', id: 11
   store.set 'products', new Batman.Set(product1, product2)
 
   storeSaveSpy = spyOn store, 'save'
   store.save (err, record) =>
     throw err if err
     equal storeSaveSpy.callCount, 1
+
     equal product1.get('store_id'), record.get('id')
     equal product2.get('store_id'), record.get('id')
 
     @Store.find record.get('id'), (err, store2) =>
       throw err if err
       storedJSON = @storeAdapter.storage["stores#{record.get('id')}"]
+
       deepEqual store2.toJSON(), storedJSON
       # hasMany saves inline by default
       sorter = generateSorterOnProperty('name')
 
       deepEqual sorter(storedJSON.products), sorter([
-        {name: "Gizmo", store_id: record.get('id'), productVariants: []}
-        {name: "Gadget", store_id: record.get('id'), productVariants: []}
+        {name: "Gizmo", store_id: record.get('id'), id: 10}
+        {name: "Gadget", store_id: record.get('id'), id: 11}
       ])
       QUnit.start()
 
@@ -382,14 +383,14 @@ asyncTest "unsaved hasMany models should save their associated children", 4, ->
   @productAdapter.create = (record, options, callback) ->
     id = @_setRecordID(record)
     if id
-      @storage[@storageKey(record) + id] = record.toJSON()
+      storedJSON = @storage[@storageKey(record) + id] = record.toJSON()
       record.fromJSON
         id: id
         productVariants: [{
           price: 100
           id: 11
         }]
-      callback(undefined, record)
+      callback(undefined, storedJSON)
     else
       callback(new Error("Couldn't get record primary key."))
 
