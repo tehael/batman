@@ -170,6 +170,7 @@ class Batman.Model extends Batman.Object
       existing._withoutDirtyTracking -> @fromJSON(jsonObject)
       existing
     else
+      createdRecord = createdRecord() if typeof createdRecord is 'function'
       newRecord = createdRecord || new this
 
       newRecord._withoutDirtyTracking -> @fromJSON(jsonObject)

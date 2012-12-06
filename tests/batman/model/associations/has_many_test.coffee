@@ -258,7 +258,7 @@ asyncTest "hasMany associations can be reloaded", 8, ->
         QUnit.start()
     , ASYNC_TEST_DELAY
 
-asyncTest "hasMany associations are saved via the parent model", 5, ->
+asyncTest "hasMany associations are saved via the parent model", ->
   store = new @Store name: 'Zellers'
   product1 = new @Product name: 'Gizmo'
   product2 = new @Product name: 'Gadget'
@@ -269,6 +269,7 @@ asyncTest "hasMany associations are saved via the parent model", 5, ->
     throw err if err
     equal storeSaveSpy.callCount, 1
 
+    deepEqual product2, store.get('products.last')
     equal product1.get('store_id'), record.get('id')
     equal product2.get('store_id'), record.get('id')
 
@@ -281,8 +282,8 @@ asyncTest "hasMany associations are saved via the parent model", 5, ->
       sorter = generateSorterOnProperty('name')
 
       deepEqual sorter(storedJSON.products), sorter([
-        {name: "Gizmo", store_id: record.get('id')}
-        {name: "Gadget", store_id: record.get('id')}
+        {id: 11, name: "Gizmo", store_id: record.get('id')}
+        {id: 12, name: "Gadget", store_id: record.get('id')}
       ])
       QUnit.start()
 
