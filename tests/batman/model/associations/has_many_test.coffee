@@ -260,9 +260,9 @@ asyncTest "hasMany associations can be reloaded", 8, ->
 
 asyncTest "hasMany associations are saved via the parent model", 5, ->
   store = new @Store name: 'Zellers'
-  product1 = new @Product name: 'Gizmo', id: 10
-  product2 = new @Product name: 'Gadget', id: 11
-  store.set 'products', new Batman.Set(product1, product2)
+  product1 = new @Product name: 'Gizmo'
+  product2 = new @Product name: 'Gadget'
+  store.get('products').add(product1, product2)
 
   storeSaveSpy = spyOn store, 'save'
   store.save (err, record) =>
@@ -281,8 +281,8 @@ asyncTest "hasMany associations are saved via the parent model", 5, ->
       sorter = generateSorterOnProperty('name')
 
       deepEqual sorter(storedJSON.products), sorter([
-        {name: "Gizmo", store_id: record.get('id'), id: 10}
-        {name: "Gadget", store_id: record.get('id'), id: 11}
+        {name: "Gizmo", store_id: record.get('id')}
+        {name: "Gadget", store_id: record.get('id')}
       ])
       QUnit.start()
 
@@ -383,25 +383,24 @@ asyncTest "unsaved hasMany models should save their associated children", 4, ->
   @productAdapter.create = (record, options, callback) ->
     id = @_setRecordID(record)
     if id
-      storedJSON = @storage[@storageKey(record) + id] = record.toJSON()
-      record.fromJSON
-        id: id
-        productVariants: [{
-          price: 100
-          id: 11
-        }]
-      callback(undefined, storedJSON)
+      recordJSON = record.toJSON()
+      recordJSON.productVariants = [{
+        id: 50
+        price: 100
+      }]
+      @storage[@storageKey(record) + id] = recordJSON
+      callback(undefined, recordJSON)
     else
       callback(new Error("Couldn't get record primary key."))
 
   product.save (err, product) =>
     throw err if err
-    storedJSON = @productAdapter.storage["products#{product.get('id')}"]
-    deepEqual storedJSON,
+
+    deepEqual product.toJSON(),
       id: 11
       name: "Hello!"
       productVariants:[
-        {price: 100, product_id: product.get('id')}
+        {id: 50, price: 100, product_id: product.get('id')}
       ]
 
     ok !product.isNew()

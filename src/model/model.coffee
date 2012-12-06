@@ -106,7 +106,7 @@ class Batman.Model extends Batman.Object
   @find: (id, callback) ->
     @findWithOptions(id, undefined, callback)
 
-  # we can't create a record and always add it to the loaded set 
+  # we can't create a record and always add it to the loaded set
   # because if we find an object that already exists the loaded set will
   # get larger and larger
   @findWithOptions: (id, options = {}, callback) ->
@@ -123,7 +123,7 @@ class Batman.Model extends Batman.Object
       options = { data: options }
 
     @loadWithOptions options, callback
-  
+
   @loadWithOptions: (options, callback) ->
     @fire 'loading', options
     @_doStorageOperation 'readAll', options, (err, records, env) =>
@@ -159,19 +159,24 @@ class Batman.Model extends Batman.Object
   # INPUT:  Object
   # OUTPUT: Batman.Model
   #
-  @_mapIdentity: (record) ->
-    if typeof (id = record[@get('primaryKey')]) == 'undefined' || id == ''
-      # if record.id is blank or undefined return the record
+  @_mapIdentity: (jsonObject, createdRecord) ->
+    if typeof (id = jsonObject[@get('primaryKey')]) == 'undefined' || id == ''
+      # if jsonObject.id is blank or undefined return a new record
       newRecord = new this
-      newRecord._withoutDirtyTracking -> @fromJSON(record)
+      newRecord._withoutDirtyTracking -> @fromJSON(jsonObject)
     else if existing = @get("loaded.indexedBy.id").get(id)?.toArray()[0]
-      # if record.id is set and the record already exists then update the record
-      existing._withoutDirtyTracking -> @updateAttributes(record)
+      # if jsonObject.id is set and the record already exists then update the record
+      existing._withoutDirtyTracking -> @fromJSON(jsonObject)
       existing
     else
-      # if record.id is set and the record doesn't exist then add the record
-      newRecord = new this
-      newRecord = newRecord._withoutDirtyTracking -> @fromJSON(record)
+      newRecord = if createdRecord
+        # if jsonObject.id is set and the record already exists but isn't in the identity map
+        createdRecord
+      else
+        # if jsonObject.id is set and the record doesn't exist then add the record
+        new this
+
+      newRecord._withoutDirtyTracking -> @fromJSON(jsonObject)
       @get('loaded').add(newRecord)
       newRecord
 
@@ -399,8 +404,11 @@ class Batman.Model extends Batman.Object
 
         @_doStorageOperation storageOperation, {data: options}, (err, record, env) =>
           unless err
-            console.log record
-            record = @constructor._mapIdentity(record)
+            record = if isNew
+              @constructor._mapIdentity(record, this)
+            else
+              @constructor._mapIdentity(record)
+
             if associations
               associations.getByType('hasOne')?.forEach (association, label) => association.apply(err, this)
               associations.getByType('hasMany')?.forEach (association, label) => association.apply(err, this)

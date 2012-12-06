@@ -132,10 +132,11 @@ asyncTest "model instances should save", ->
     QUnit.start()
 
 asyncTest "new instances should be added to the identity map", ->
-  product = new @Product()
+  product1 = new @Product()
   equal @Product.get('loaded.length'), 0
-  product.save (err, product) =>
+  product1.save (err, product2) =>
     throw err if err?
+    strictEqual product1, product2
     equal @Product.get('loaded').length, 1
     QUnit.start()
 
