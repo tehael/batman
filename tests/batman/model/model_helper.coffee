@@ -1,15 +1,19 @@
 class TestStorageAdapter extends Batman.StorageAdapter
   @autoCreate: true
-  constructor: ->
+  constructor: (modelClass) ->
     super
+    @associations = modelClass._batman.get('associations')
     @counter = 10
     @storage = {}
     @lastQuery = false
     @create(new @model, {}, ->) if @constructor.autoCreate
     @env = {}
 
+  _getRecordID: ->
+    @counter++
+
   _setRecordID: (record) ->
-    record._withoutDirtyTracking => record.set('id', @counter++)
+    record._withoutDirtyTracking => record.set('id', @_getRecordID())
 
   update: (record, options, callback) ->
     id = record.get('id')
@@ -22,14 +26,18 @@ class TestStorageAdapter extends Batman.StorageAdapter
       callback(new Error("Couldn't get record primary key."))
 
   create: (record, options, callback) ->
-    id = @_setRecordID(record)
-    if id
-      object = record.toJSON()
-      @storage[@storageKey(record) + id] = object
-      object['id'] = id
-      callback(undefined, object, @env)
-    else
-      callback(new Error("Couldn't get record primary key."))
+    id = @_getRecordID()
+    object = record.toJSON()
+    object.id = id
+
+    for key, array of object
+      if association = @associations.get(key)
+        for child in array
+          child[association.primaryKey] = @_getRecordID() if not child.id
+          child[association.foreignKey] = id
+
+    @storage[@storageKey(record) + id] = object
+    callback(undefined, object, @env)
 
   read: (record, options, callback) ->
     id = record.get('id')
@@ -71,6 +79,7 @@ class TestStorageAdapter extends Batman.StorageAdapter
     @[action](record, options.data, callback)
 
 class AsyncTestStorageAdapter extends TestStorageAdapter
+  @autoCreate: false
   perform: (args...) ->
     setTimeout =>
       TestStorageAdapter::perform.apply(@, args)
