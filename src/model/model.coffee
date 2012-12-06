@@ -131,7 +131,7 @@ class Batman.Model extends Batman.Object
         @fire 'error', err
         callback?(err, [])
       else
-        mappedRecords = (@_mapIdentity(record) for record in records)
+        mappedRecords = (@_identifyRecord(record) for record in records)
         @fire 'loaded', mappedRecords, env
         callback?(err, mappedRecords, env)
 
@@ -147,7 +147,7 @@ class Batman.Model extends Batman.Object
     if record.isNew()
       record.save(callback)
     else
-      foundRecord = @_mapIdentity(record)
+      foundRecord = @_identifyRecord(record)
       callback(undefined, foundRecord)
 
     record
@@ -159,7 +159,7 @@ class Batman.Model extends Batman.Object
   # INPUT:  Object
   # OUTPUT: Batman.Model
   #
-  @_mapIdentity: (jsonObject, createdRecord) ->
+  @_identifyRecord: (jsonObject, createdRecord) ->
     primaryKey = @get('primaryKey')
     if typeof (id = jsonObject[primaryKey]) == 'undefined' || id == ''
       # if jsonObject.id is blank or undefined return a new record
@@ -360,9 +360,9 @@ class Batman.Model extends Batman.Object
           @get('lifecycle').loaded()
           #
           # on Model#find we get to this point and have a record with the id set, but it isn't in the loaded set
-          # we call mapIdentity and it doesn't find that record and creates a new record without an id
+          # we call identifyRecord and it doesn't find that record and creates a new record without an id
           #
-          record = @constructor._mapIdentity(record)
+          record = @constructor._identifyRecord(record)
         else
           @get('lifecycle').error()
         if !hasOptions
@@ -401,7 +401,7 @@ class Batman.Model extends Batman.Object
 
         @_doStorageOperation storageOperation, {data: options}, (err, record, env) =>
           unless err
-            record = @constructor._mapIdentity(record, if isNew then this else undefined)
+            record = @constructor._identifyRecord(record, if isNew then this else undefined)
 
             if associations
               associations.getByType('hasOne')?.forEach (association, label) => association.apply(err, this)

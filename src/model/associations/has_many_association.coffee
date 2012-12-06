@@ -50,8 +50,8 @@ class Batman.HasManyAssociation extends Batman.PluralAssociation
         newRelations = existingRelations.filter((relation) -> relation.isNew()).toArray()
 
         #
-        # As we move over all the nodes we should pass them to _mapIdentity
-        # If _mapIdentity has the objects it will return them
+        # As we move over all the nodes we should pass them to _identifyRecord
+        # If _identifyRecord has the objects it will return them
         # Otherwise, it we'll check if there were any existing Batman.Model
         # objects that we can use, which we'll return IN THE SAME ORDER.
         # So, make sure your server returns the new data in the same order
@@ -61,7 +61,7 @@ class Batman.HasManyAssociation extends Batman.PluralAssociation
           newRelations.shift() if newRelations.length
 
         for jsonObject in data
-          record = relatedModel._mapIdentity(jsonObject, newAssociatedRecord)
+          record = relatedModel._identifyRecord(jsonObject, newAssociatedRecord)
           existingRelations.add(record)
 
           if association.options.inverseOf
