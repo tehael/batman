@@ -7,21 +7,28 @@ class Batman.DOM.ViewArgumentBinding extends Batman.DOM.AbstractBinding
     super(definition)
 
   die: ->
-    args = @view.get('argumentBindings')._batman.properties.toArray()
-    for arg in args
-      lookup = {}
-      for key in @view._batman.properties.keys()
-        if key.indexOf("#{arg}.") == 0
-          k = key.slice(arg.length+1)
-          lookup[k] ||= []
-          lookup[k].push(key)
+    keys = @view._batman.properties.keys()
+    if @key
+      for argument in @view.get('argumentBindings')._batman.properties.toArray()
+        for key in keys
+          if key.indexOf("#{argument}") == 0
+            subkey = key.slice(argument.length)
+            keyPath = @view.get("argumentBindings.#{argument}").key
+            existingHandlers = if subkey.indexOf('.') == 0
+              subkey = subkey.slice(1)
+              @view.get(argument).property(subkey, false)?.event('change', false)?.handlers
+            else
+              @view.property(key, false)?.event('change', false)?.handlers
 
-      for key, val of lookup
-        keypath = @view.get("argumentBindings.#{arg}").keyPath
-        for omg in val
-          existingHandlers = @view.get(arg).property(key).event('change', false)?.handlers
-          if existingHandlers
-            for handler in existingHandlers
-              @view.context.get(keypath).property(key).event('change', false)?.removeHandler handler
+            if existingHandlers
+              if subkey.length > 0
+                property = @get('keyContext')?.get(keyPath)?.property(subkey, false)
+              else
+                property = @get('keyContext')?.property(keyPath, false)
+
+              continue unless property
+              for handler in existingHandlers
+                property.event('change', false).removeHandler handler
     @view = undefined
     super
+

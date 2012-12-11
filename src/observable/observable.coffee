@@ -7,11 +7,20 @@ Batman.Observable =
   isObservable: true
   hasProperty: (key) ->
     @_batman?.properties?.hasKey?(key)
-  property: (key) ->
+  property: (key, createProperty = true) ->
     Batman.initializeObject @
-    propertyClass = @propertyClass or Batman.Keypath
-    properties = @_batman.properties ||= new Batman.SimpleHash
-    properties.get(key) or properties.set(key, new propertyClass(this, key))
+    if createProperty
+      @_batman.properties ||= new Batman.SimpleHash
+      property = @_batman.properties.get(key)
+      propertyClass = @propertyClass or Batman.Keypath
+      property || @_batman.properties?.set(key, new propertyClass(this, key))
+    else
+      @_batman.properties?.get(key)
+    # if !properties && createProperty
+    #   properties = @
+    #
+    # properties = @_batman.properties ||= new Batman.SimpleHash
+    # properties.get(key) or properties.set(key, new propertyClass(this, key))
   get: (key) ->
     @property(key).getValue()
   set: (key, val) ->
