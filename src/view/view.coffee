@@ -38,7 +38,7 @@ class Batman.View extends Batman.Object
       @[bindingKey]?.die()
 
       definition = new Batman.DOM.ReaderBindingDefinition(node, keyPath, context)
-      @[bindingKey] = new Batman.DOM.ViewArgumentBinding(definition)
+      @[bindingKey] = new Batman.DOM.ViewArgumentBinding(definition, this)
 
   @accessor 'html',
     get: ->

@@ -55,7 +55,6 @@ class Batman.Property
   isEqual: (other) ->
     @constructor is other.constructor and @base is other.base and @key is other.key
   hashKey: ->
-    @hashKey = -> key
     key = "<Batman.Property base: #{Batman.Hash::hashKeyFor(@base)}, key: \"#{Batman.Hash::hashKeyFor(@key)}\">"
   event: (key) ->
     eventClass = @eventClass or Batman.Event
@@ -64,11 +63,9 @@ class Batman.Property
     @events[key]
   changeEvent: ->
     event = @event('change')
-    @changeEvent = -> event
     event
   accessor: ->
     accessor = @constructor.accessorForBaseAndKey(@base, @key)
-    @accessor = -> accessor
     accessor
   eachObserver: (iterator) ->
     key = @key
@@ -122,10 +119,9 @@ class Batman.Property
     @lockValue() if @value isnt undefined and @isFinal()
 
   sourceChangeHandler: ->
-    handler = @_handleSourceChange.bind(@)
-    Batman.developer.do => handler.property = @
-    @sourceChangeHandler = -> handler
-    handler
+    @_sourceChangeHandler ||= @_handleSourceChange.bind(@)
+    Batman.developer.do => @_sourceChangeHandler.property = @
+    @_sourceChangeHandler
 
   _handleSourceChange: ->
     if @isIsolated()
@@ -178,7 +174,10 @@ class Batman.Property
 
   _removeHandlers: ->
     handler = @sourceChangeHandler()
-    source.event('change').removeHandler(handler) for source in @sources if @sources
+    if @sources
+      for source in @sources
+        changeEvent = source.event('change')
+        changeEvent.removeHandler(handler)
     delete @sources
     @changeEvent().clearHandlers()
 
