@@ -1,0 +1,20 @@
+## Batman.RestStorage
+
+### @urlNestsUnder(nestings...)
+
+`urlNestsUnder` is a class level configuration option to be able to nest the given model under one or more other resources. A nesting can be a simple string representing a resource name, or an array of such resource names. A resource name normaly corresponds to a model attribute with the same name suffixed wit `_id`, i.e. like a foreign key.
+If it is an array it defines a deeply nested resource, i.e. the url has more than one level of nesting. The order of the nestings define the precedence, which means the first nesting where all necessary `_id` attributes are present is used to produce the url. If none of nestings can be satisfied it falls back to the default url.
+
+!!!
+test 'defining url nesting', ->
+  show(class Product extends Batman.Model
+    @persist Batman.RestStorage
+    @urlNestsUnder ['shop', 'manufacturer'], 'order'
+  )
+  equal Product.url(data: shop_id: 1, manufacturer_id: 2), 'shops/1/manufacturers/2/products'
+  equal (new Product(shop_id: 1, manufacturer_id: 2, id: 3)).url(), 'shops/1/manufacturers/2/products/3'
+  equal Product.url(data: shop_id: 1, order_id: 2), 'orders/2/products'
+  equal (new Product(shop_id: 1, order_id: 2, id: 3)).url(), 'orders/2/products/3'
+  equal Product.url(data: shop_id: 1), 'products'
+  equal (new Product(shop_id: 1, id: 2)).url(), 'products/2'
+!!!

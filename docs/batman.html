@@ -392,6 +392,12 @@
 </li>
   <li class="searchable"><a href="#batman-errorsset" class="class">Batman.ErrorsSet</a>
 </li>
+  <li class="searchable"><a href="#batman-reststorage" class="class">Batman.RestStorage</a>
+<ul>
+  <li class="searchable"><a href="#batman-reststorage-urlnestsunder" class="class-function">@urlNestsUnder(nestings...)</a>
+</li>
+</ul>
+</li>
   <li class="searchable"><a href="#batman-view" class="class">Batman.View</a>
 </li>
   <li class="searchable"><a href="#what-are-views" class="class-function">What Are Views?</a>
@@ -4112,6 +4118,69 @@ batman server <span class="c"># (or just &quot;batman s&quot;)</span>
 <h2 id="batman-errorsset">Batman.ErrorsSet</h2>
 
 
+<h2 id="batman-reststorage">Batman.RestStorage</h2>
+<h3 id="batman-reststorage-urlnestsunder">@urlNestsUnder(nestings...)</h3>
+<p><code>urlNestsUnder</code> is a class level configuration option to be able to nest the given model under one or more other resources. A nesting can be a simple string representing a resource name, or an array of such resource names. A resource name normaly corresponds to a model attribute with the same name suffixed wit <code>_id</code>, i.e. like a foreign key.
+If it is an array it defines a deeply nested resource, i.e. the url has more than one level of nesting. The order of the nestings define the precedence, which means the first nesting where all necessary <code>_id</code> attributes are present is used to produce the url. If none of nestings can be satisfied it falls back to the default url.
+
+</p>
+<div class="console-session">
+  <h4>defining url nesting</h4>
+  <pre><code class="javascript"><div class="in"><div class="highlight"><pre><span class="nx">Product</span> <span class="o">=</span> <span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">_super</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="nx">__extends</span><span class="p">(</span><span class="nx">Product</span><span class="p">,</span> <span class="nx">_super</span><span class="p">);</span>
+
+    <span class="kd">function</span> <span class="nx">Product</span><span class="p">()</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nx">Product</span><span class="p">.</span><span class="nx">__super__</span><span class="p">.</span><span class="nx">constructor</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="nx">Product</span><span class="p">.</span><span class="nx">persist</span><span class="p">(</span><span class="nx">Batman</span><span class="p">.</span><span class="nx">RestStorage</span><span class="p">);</span>
+
+    <span class="nx">Product</span><span class="p">.</span><span class="nx">urlNestsUnder</span><span class="p">([</span><span class="s1">&#39;shop&#39;</span><span class="p">,</span> <span class="s1">&#39;manufacturer&#39;</span><span class="p">],</span> <span class="s1">&#39;order&#39;</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="nx">Product</span><span class="p">;</span>
+
+  <span class="p">})(</span><span class="nx">Batman</span><span class="p">.</span><span class="nx">Model</span><span class="p">)</span>
+</pre></div></div><div class="out"></div><div class="in"><div class="highlight"><pre><span class="nx">Product</span><span class="p">.</span><span class="nx">url</span><span class="p">({</span>
+    <span class="nx">data</span><span class="o">:</span> <span class="p">{</span>
+      <span class="nx">shop_id</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+      <span class="nx">manufacturer_id</span><span class="o">:</span> <span class="mi">2</span>
+    <span class="p">}</span>
+  <span class="p">})</span>
+</pre></div></div><div class="out"><div class="highlight"><pre><span class="s1">&#39;shops/1/manufacturers/2/products&#39;</span>
+</pre></div></div><div class="in"><div class="highlight"><pre><span class="p">(</span><span class="k">new</span> <span class="nx">Product</span><span class="p">({</span>
+    <span class="nx">shop_id</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="nx">manufacturer_id</span><span class="o">:</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="nx">id</span><span class="o">:</span> <span class="mi">3</span>
+  <span class="p">})).</span><span class="nx">url</span><span class="p">()</span>
+</pre></div></div><div class="out"><div class="highlight"><pre><span class="s1">&#39;shops/1/manufacturers/2/products/3&#39;</span>
+</pre></div></div><div class="in"><div class="highlight"><pre><span class="nx">Product</span><span class="p">.</span><span class="nx">url</span><span class="p">({</span>
+    <span class="nx">data</span><span class="o">:</span> <span class="p">{</span>
+      <span class="nx">shop_id</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+      <span class="nx">order_id</span><span class="o">:</span> <span class="mi">2</span>
+    <span class="p">}</span>
+  <span class="p">})</span>
+</pre></div></div><div class="out"><div class="highlight"><pre><span class="s1">&#39;orders/2/products&#39;</span>
+</pre></div></div><div class="in"><div class="highlight"><pre><span class="p">(</span><span class="k">new</span> <span class="nx">Product</span><span class="p">({</span>
+    <span class="nx">shop_id</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="nx">order_id</span><span class="o">:</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="nx">id</span><span class="o">:</span> <span class="mi">3</span>
+  <span class="p">})).</span><span class="nx">url</span><span class="p">()</span>
+</pre></div></div><div class="out"><div class="highlight"><pre><span class="s1">&#39;orders/2/products/3&#39;</span>
+</pre></div></div><div class="in"><div class="highlight"><pre><span class="nx">Product</span><span class="p">.</span><span class="nx">url</span><span class="p">({</span>
+    <span class="nx">data</span><span class="o">:</span> <span class="p">{</span>
+      <span class="nx">shop_id</span><span class="o">:</span> <span class="mi">1</span>
+    <span class="p">}</span>
+  <span class="p">})</span>
+</pre></div></div><div class="out"><div class="highlight"><pre><span class="s1">&#39;products&#39;</span>
+</pre></div></div><div class="in"><div class="highlight"><pre><span class="p">(</span><span class="k">new</span> <span class="nx">Product</span><span class="p">({</span>
+    <span class="nx">shop_id</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="nx">id</span><span class="o">:</span> <span class="mi">2</span>
+  <span class="p">})).</span><span class="nx">url</span><span class="p">()</span>
+</pre></div></div><div class="out"><div class="highlight"><pre><span class="s1">&#39;products/2&#39;</span>
+</pre></div></div></code>
+  </pre>
+</div>
 
 <h2 id="batman-view">Batman.View</h2>
 
