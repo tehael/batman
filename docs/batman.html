@@ -1633,8 +1633,7 @@ batman server <span class="c"># (or just &quot;batman s&quot;)</span>
     <span class="nx">body</span><span class="o">:</span> <span class="s2">&quot;Why Batman is Useful: A lengthy post on an important subject&quot;</span>
   <span class="p">})</span>
 </pre></div></div><div class="out"></div><div class="in"><div class="highlight"><pre><span class="nx">post</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;summary&#39;</span><span class="p">)</span>
-</pre></div></div><div class="out"><div class="highlight"><pre><span class="s2">&quot;Why Batman...&quot;</span>
-</pre></div></div></code>
+</pre></div></div><div class="out"></div></code>
   </pre>
 </div>
 <p>You can also use accessors to combine properties; the colloquial <code>fullName</code> example comes to mind, but all sorts of other complex logic can be abstracted away using the accessor pattern.
@@ -1642,27 +1641,7 @@ batman server <span class="c"># (or just &quot;batman s&quot;)</span>
 </p>
 <div class="console-session">
   <h4>@accessor can define a transform on several properties</h4>
-  <pre><code class="javascript"><div class="in"><div class="highlight"><pre><span class="nx">User</span> <span class="o">=</span> <span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">_super</span><span class="p">)</span> <span class="p">{</span>
-
-    <span class="nx">__extends</span><span class="p">(</span><span class="nx">User</span><span class="p">,</span> <span class="nx">_super</span><span class="p">);</span>
-
-    <span class="kd">function</span> <span class="nx">User</span><span class="p">()</span> <span class="p">{</span>
-      <span class="k">return</span> <span class="nx">User</span><span class="p">.</span><span class="nx">__super__</span><span class="p">.</span><span class="nx">constructor</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span>
-    <span class="p">}</span>
-
-    <span class="nx">User</span><span class="p">.</span><span class="nx">accessor</span><span class="p">(</span><span class="s1">&#39;fullName&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-      <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;firstName&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="k">this</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;lastName&#39;</span><span class="p">);</span>
-    <span class="p">});</span>
-
-    <span class="k">return</span> <span class="nx">User</span><span class="p">;</span>
-
-  <span class="p">})(</span><span class="nx">Batman</span><span class="p">.</span><span class="nb">Object</span><span class="p">)</span>
-</pre></div></div><div class="out"></div><div class="in"><div class="highlight"><pre><span class="nx">tim</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">User</span><span class="p">({</span>
-    <span class="nx">firstName</span><span class="o">:</span> <span class="s2">&quot;Tim&quot;</span><span class="p">,</span>
-    <span class="nx">lastName</span><span class="o">:</span> <span class="s2">&quot;Thomas&quot;</span>
-  <span class="p">})</span>
-</pre></div></div><div class="out"></div><div class="in"><div class="highlight"><pre><span class="nx">tim</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;fullName&#39;</span><span class="p">)</span>
-</pre></div></div><div class="out"><div class="highlight"><pre><span class="s2">&quot;Tim Thomas&quot;</span>
+  <pre><code class="javascript"><div class="in"></div><div class="out"></div><div class="in"></div><div class="out"></div><div class="in"></div><div class="out"><div class="highlight"><pre><span class="s2">&quot;Tim Thomas&quot;</span>
 </pre></div></div><div class="in"><div class="highlight"><pre><span class="nx">tim</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;firstName&#39;</span><span class="p">,</span> <span class="s2">&quot;Timmy&quot;</span><span class="p">)</span>
 </pre></div></div><div class="out"></div><div class="in"><div class="highlight"><pre><span class="nx">tim</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;fullName&#39;</span><span class="p">)</span>
 </pre></div></div><div class="out"><div class="highlight"><pre><span class="s2">&quot;Timmy Thomas&quot;</span>

@@ -20,8 +20,9 @@ class Batman.DOM.AbstractBinding extends Batman.Object
       (\{[^\}]*\})      # Match object literals
       |
       (
-        [a-zA-Z][\w\-\.]*   # Now that true and false can't be matched, match a dot delimited list of keys.
-        [\?\!]?             # Allow ? and ! at the end of a keypath to support Ruby's methods
+        ([0-9]+[a-zA-Z\_]|[a-zA-Z]) # Keys that start with a number must contain atleast one letter or an underscore
+        [\w\-\.]*                   # Now that true and false can't be matched, match a dot delimited list of keys.
+        [\?\!]?                     # Allow ? and ! at the end of a keypath to support Ruby's methods
       )
     )
     \s*                 # Be insensitive to whitespace before the next comma or end of the filter arguments list.
@@ -114,7 +115,7 @@ class Batman.DOM.AbstractBinding extends Batman.Object
   bind: ->
     # Attach the observers.
     if @node and @onlyObserve in [onlyAll, onlyNode] and Batman.DOM.nodeIsEditable(@node)
-      Batman.DOM.events.change @node, @_fireNodeChange
+      Batman.DOM.events.change @node, @_fireNodeChange.bind(this)
 
       # Usually, we let the HTML value get updated upon binding by `observeAndFire`ing the dataChange
       # function below. When dataChange isn't attached, we update the JS land value such that the
@@ -128,7 +129,7 @@ class Batman.DOM.AbstractBinding extends Batman.Object
 
     Batman.DOM.trackBinding(this, @node) if @node
 
-  _fireNodeChange: (event) =>
+  _fireNodeChange: (event) ->
     @shouldSet = false
     val = @value || @get('keyContext')
     @nodeChange?(@node, val, event)
